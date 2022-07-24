@@ -1,0 +1,57 @@
+#Azure CLI: handy commands:
+az login
+az account set --subscription "{your subscription ID}"
+az account set --subscription {your subscription ID}
+az configure --defaults group=[previously created resource group name]
+az deployment group create --template-file main.bicep
+
+
+#Bicep: source: https://docs.microsoft.com/en-us/learn/modules/build-first-bicep-template/5-add-flexibility-parameters-variables
+#Bicep: 
+
+./add parameter
+param appServiceAppName string
+    string is the type of the parameter. You can specify several different types for Bicep parameters, including string (for text), int (for numbers), and bool (for Boolean true/false values). You can also pass in more complex parameters by using the array and object types.
+param appServiceAppName string = '{name}'
+
+./add variable
+var appServicePlanName = '{name}'
+
+./parameter location: "resrouceGroup() refers to previously mentioned RGs! Handy..."
+param location string = resourceGroup().location
+
+./uniquestring()
+You can get the same name every time you deploy the same set of resources. But you'll get a different name whenever you deploy a different set of resources by using the same template.
+param storageAccountName string = uniqueString(resourceGroup().id)
+
+./combined strings
+You'll often want to create a name by combining a meaningful word or string with a unique value. This way, you'll have resources that have both meaningful and unique names.
+Sometimes the uniqueString() function will create strings that start with a number. Some Azure resources, like storage accounts, don't allow their names to start with numbers. This means it's a good idea to use string interpolation to create resource names, like in the preceding example.
+param storageAccountName string = 'toylaunch${uniqueString(resourceGroup().id)}'
+
+./environmentType
+Notice that this code uses some new syntax to specify a list of allowed values for the environmentType parameter. Bicep won't let anyone deploy the template unless they provide one of these values.
+@allowed([
+  'nonprod'
+  'prod'
+])
+param environmentType string
+Next, you can create variables that determine the SKUs to use for the storage account and App Service plan based on the environment:
+var storageAccountSkuName = (environmentType == 'prod') ? 'Standard_GRS' : 'Standard_LRS'
+var appServicePlanSkuName = (environmentType == 'prod') ? 'P2V3' : 'F1'
+
+**Note:
+? is called the ternary operator, and it evaluates an if/then statement. The part after this operator is whats used if the expression is true. If the expression evaluates to false, the value after the colon (:) is used.
+
+./output - source: https://docs.microsoft.com/en-us/learn/modules/build-first-bicep-template/7-group-related-resources-modules
+Its common to have some data from the template you need to send back to whoever or whatever is executing the template deployment.
+output appServiceAppName string = appServiceAppName
+output ipFqdn string = publicIPAddress.properties.dnsSettings.fqdn
+
+**Note: 
+A value must be specified for each output. Unlike parameters, outputs always need to have values. Output values can be expressions, references to parameters or variables, or properties of resources that are deployed within the file.
+Bicep modules can define outputs. Its common to chain modules together within a template. In that case, the output from one module can be a parameter for another module. By using modules and outputs together, you can create powerful and reusable Bicep files.
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
