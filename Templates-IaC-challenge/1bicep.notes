@@ -6,13 +6,40 @@ az configure --defaults group=[previously created resource group name]
 az deployment group create --template-file main.bicep
 
 
-#Bicep: source: https://docs.microsoft.com/en-us/learn/modules/build-first-bicep-template/5-add-flexibility-parameters-variables
 #Bicep: 
+File structure: https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/file
+source 2: https://docs.microsoft.com/en-us/learn/modules/build-first-bicep-template/5-add-flexibility-parameters-variables
 
 ./add parameter
 param appServiceAppName string
     string is the type of the parameter. You can specify several different types for Bicep parameters, including string (for text), int (for numbers), and bool (for Boolean true/false values). You can also pass in more complex parameters by using the array and object types.
 param appServiceAppName string = '{name}'
+
+**Note - Parameters can be Objects - to combine structured data together in one place. An object can have multiple properties of different types.E.g:
+param appServicePlanSku object = {
+  name: 'F1'
+  tier: 'Free'
+  capacity: 1
+}
+
+**Note2 - Parameter length and values
+It's a good practice to specify the minimum and maximum character length for parameters that control naming, to avoid errors later during deployment.
+@minLength(5)
+@maxLength(24)
+param storageAccountName string
+
+**Note3 - parameter descriptions
+@description('The locations into which this Cosmos DB account should be configured. This parameter needs to be a list of objects, each of which has a locationName property.')
+param cosmosDBAccountLocations array
+
+./parameter files
+Source: https://docs.microsoft.com/en-us/learn/modules/build-reusable-bicep-templates-parameters/4-how-use-parameter-file-with-bicep?pivots=cli
+
+az deployment group create \
+  --template-file main.bicep \
+  --parameters main.parameters.json
+
+
 
 ./add variable
 var appServicePlanName = '{name}'
@@ -51,6 +78,9 @@ output ipFqdn string = publicIPAddress.properties.dnsSettings.fqdn
 **Note: 
 A value must be specified for each output. Unlike parameters, outputs always need to have values. Output values can be expressions, references to parameters or variables, or properties of resources that are deployed within the file.
 Bicep modules can define outputs. Its common to chain modules together within a template. In that case, the output from one module can be a parameter for another module. By using modules and outputs together, you can create powerful and reusable Bicep files.
+
+./arrays - A list of items. array of objects to represent a list of subnets for a virtual network.
+Arrays can also recevied minimum and maximum length modifiers (like parameters).
 
 
 
