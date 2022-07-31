@@ -5,6 +5,9 @@ az account set --subscription {your subscription ID}
 az configure --defaults group=[previously created resource group name]
 az deployment group create --template-file main.bicep
 
+//show current azure tenant information loaded in az CLI
+az account show
+
 //Deploy with a parameter file located in the same location of the "main.bicep" file
 az deployment group create   --template-file main.bicep  --parameters main.parameters.dev.json
 
